@@ -1,4 +1,4 @@
-import pandas as pd
+mport pandas as pd
 import streamlit as st
 
 st.set_page_config(
@@ -393,3 +393,94 @@ if scelta == "📋 Listone Serie A":
     st.markdown(
         "Cerca e filtra i giocatori per ruolo o per qualsiasi squadra della"
         " Serie A."
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        filtro_ruolo = st.selectbox(
+            "Filtra per Ruolo", ["Tutti", "P", "D", "C", "A"]
+        )
+    with col2:
+        filtro_squadra = st.selectbox(
+            "Filtra per Squadra", ["Tutte"] + sorted(list(df_listone["Squadra"].unique()))
+        )
+
+    df_filtrato = df_listone.copy()
+    if filtro_ruolo != "Tutti":
+        df_filtrato = df_filtrato[df_filtrato["Ruolo"] == filtro_ruolo]
+    if filtro_squadra != "Tutte":
+        df_filtrato = df_filtrato[df_filtrato["Squadra"] == filtro_squadra]
+
+    st.dataframe(df_filtrato, use_container_width=True)
+
+# --- 3. ROSE DELLE SQUADRE ---
+elif scelta == "👥 Rose delle Squadre":
+    st.header("👥 Rose delle Squadre della Lega")
+    st.markdown("Visualizza i giocatori acquistati da ciascun partecipante.")
+
+    if "rose" not in st.session_state:
+        st.session_state.rose = {
+            p: pd.DataFrame(columns=["Giocatore", "Ruolo", "Squadra", "Spesa"])
+            for p in lista_partecipanti
+        }
+
+    squadra_selezionata = st.selectbox(
+        "Seleziona la squadra da visualizzare", lista_partecipanti
+    )
+
+    if squadra_selezionata in st.session_state.rose:
+        st.subheader(f"Rosa di: {squadra_selezionata}")
+        st.dataframe(
+            st.session_state.rose[squadra_selezionata], use_container_width=True
+        )
+    else:
+        st.info("Nessun giocatore in rosa per questa squadra.")
+
+# --- 4. GESTIONE MERCATO / ASTA ---
+elif scelta == "🔨 Gestione Mercato / Asta":
+    st.header("🔨 Assegnazione Giocatori (Asta / Mercato)")
+    st.markdown(
+        "Seleziona un giocatore dal listone, assegnalo a un partecipante e scala"
+        " i crediti."
+    )
+
+    if "rose" not in st.session_state:
+        st.session_state.rose = {
+            p: pd.DataFrame(columns=["Giocatore", "Ruolo", "Squadra", "Spesa"])
+            for p in lista_partecipanti
+        }
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        giocatore_scelto = st.selectbox(
+            "Scegli Giocatore", df_listone["Giocatore"].tolist()
+        )
+    with col2:
+        acquirente = st.selectbox("Assegna a Squadra", lista_partecipanti)
+    with col3:
+        prezzo_pagato = st.number_input("Crediti spesi", min_value=1, value=10)
+
+    if st.button("💾 Conferma Acquisto"):
+        info_giocatore = df_listone[
+            df_listone["Giocatore"] == giocatore_scelto
+        ].iloc[0]
+
+        nuovo_acquisto = pd.DataFrame(
+            [
+                {
+                    "Giocatore": info_giocatore["Giocatore"],
+                    "Ruolo": info_giocatore["Ruolo"],
+                    "Squadra": info_giocatore["Squadra"],
+                    "Spesa": prezzo_pagato,
+                }
+            ]
+        )
+
+        st.session_state.rose[acquirente] = pd.concat(
+            [st.session_state.rose[acquirente], nuovo_acquisto], ignore_index=True
+        )
+        st.success(
+            f"✅ {giocatore_scelto} assegnato a {acquirente} per {prezzo_pagato}"
+            " crediti!"
+        )
