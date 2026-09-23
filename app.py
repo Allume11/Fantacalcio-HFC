@@ -1,3 +1,4 @@
+
 import pandas as pd
 import streamlit as st
 
@@ -7,7 +8,8 @@ st.set_page_config(
 
 st.title("⚽ Piattaforma Gestione Lega Fantacalcio")
 st.markdown(
-    "Crea la tua lega, gestisci i partecipanti e consulta il listone ufficiale completo della Serie A."
+    "Crea la tua lega, gestisci i partecipanti e consulta il listone ufficiale"
+    " completo della Serie A."
 )
 
 # --- 1. CONFIGURAZIONE DELLA LEGA ---
@@ -34,7 +36,6 @@ scelta = st.sidebar.radio(
 )
 
 # --- 2. LISTONE COMPLETO SERIE A (TUTTE LE SQUADRE) ---
-# Database completo dei principali giocatori della Serie A suddivisi per squadra
 giocatori_data = [
     # Atalanta
     ("Carnesecchi Marco", "P", "Atalanta", 15),
@@ -70,7 +71,7 @@ giocatori_data = [
     ("Fabbian Giovanni", "C", "Bologna", 15),
     ("Ferguson Lewis", "C", "Bologna", 18),
     ("Urbanski Kacper", "C", "Bologna", 7),
-    ("Orsolini Riccardo", "D", "Bologna", 24),
+    ("Orsolini Riccardo", "A", "Bologna", 24),
     ("Ndoye Dan", "A", "Bologna", 16),
     ("Castro Santiago", "A", "Bologna", 20),
     ("Dallinga Thijs", "A", "Bologna", 18),
@@ -193,7 +194,8 @@ df_listone = pd.DataFrame(
 
 if scelta == "📋 Listone Serie A":
     st.header(
-        f"📋 Listone Ufficiale Giocatori Serie A (Totale: {len(df_listone)} giocatori)"
+        f"📋 Listone Ufficiale Giocatori Serie A (Totale: {len(df_listone)}"
+        " giocatori)"
     )
     st.markdown("Cerca e filtra i giocatori per ruolo o squadra.")
 
@@ -204,4 +206,4 @@ if scelta == "📋 Listone Serie A":
         )
     with col2:
         filtro_squadra = st.selectbox(
-            "Filtra per Squadra", ["Tutte"] + sorted(df_listone["Squadra"].unique())
+            "Filtra per Squadra", ["Tutte"] + sorted(list(df_listone["Squadra"].unique()))
