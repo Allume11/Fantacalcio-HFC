@@ -18,7 +18,7 @@ budget_iniziale = st.sidebar.number_input(
 )
 
 # Inserimento dei partecipanti reali
- partecipanti_input = st.sidebar.text_area(
+partecipanti_input = st.sidebar.text_area(
     "Nomi dei Partecipanti (uno per riga)", "Leonardo\nAmico 1\nAmico 2\nAmico 3"
 )
 lista_partecipanti = [p.strip() for p in partecipanti_input.split("\n") if p.strip()]
@@ -34,7 +34,6 @@ scelta = st.sidebar.radio(
 )
 
 # --- 2. LISTONE AGGIORNATO SERIE A ---
-# Dati aggiornati dei giocatori reali della Serie A
 data_listone = {
     "Giocatore": [
         "Lautaro Martinez",
@@ -121,7 +120,6 @@ elif scelta == "👥 Rose delle Squadre":
     st.header("👥 Rose delle Squadre della Lega")
     st.markdown("Visualizza i giocatori acquistati da ciascun partecipante.")
 
-    # Simulazione iniziale delle rose basata sui partecipanti inseriti
     if "rose" not in st.session_state:
         st.session_state.rose = {
             p: pd.DataFrame(columns=["Giocatore", "Ruolo", "Squadra", "Spesa"])
