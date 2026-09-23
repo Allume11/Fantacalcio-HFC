@@ -1,129 +1,188 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
-# Configurazione della pagina
 st.set_page_config(
-    page_title="HFC Fantacalcio Management",
-    page_icon="⚽",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Gestione Lega Fantacalcio", page_icon="⚽", layout="wide"
 )
 
-# Stile CSS personalizzato per renderla bella, moderna e accattivante
-st.markdown("""
-    <style>
-    .main-header {
-        background: linear-gradient(90deg, #1b4f72 0%, #2980b9 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .main-header h1 {
-        margin: 0;
-        font-size: 2.2rem;
-    }
-    .main-header p {
-        margin: 5px 0 0 0;
-        font-size: 1rem;
-        opacity: 0.9;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #f8f9fa;
-        border-radius: 8px 8px 0 0;
-        padding: 10px 20px;
-        font-weight: 600;
-    }
-    </style>
-""", unsafe_allow_html=True)
+st.title("⚽ Piattaforma Gestione Lega Fantacalcio")
+st.markdown(
+    "Crea la tua lega, gestisci i partecipanti e consulta il listone aggiornato."
+)
 
-# Intestazione grafica spettacolare
-st.markdown("""
-    <div class="main-header">
-        <h1>🏆 HFC Fantacalcio Management System</h1>
-        <p>Piattaforma Web Ufficiale • Sincronizzata con Google Drive & Google Sheets</p>
-    </div>
-""", unsafe_allow_html=True)
+# --- 1. CONFIGURAZIONE DELLA LEGA ---
+st.sidebar.header("⚙️ Configurazione Lega")
+nome_lega = st.sidebar.text_input("Nome della Lega", "La mia Lega")
+budget_iniziale = st.sidebar.number_input(
+    "Crediti Iniziali per Squadra", value=500, step=50
+)
 
-# Menu a schede (Tab) pulito e ordinato
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📋 Rosa & Formazione", 
-    "🔨 Asta & Mercato", 
-    "⚽ Scontro Diretto", 
-    "🛡️ Modificatore & Stat", 
-    "📅 Calendario & Classifica"
-])
+# Inserimento dei partecipanti reali
+ partecipanti_input = st.sidebar.text_area(
+    "Nomi dei Partecipanti (uno per riga)", "Leonardo\nAmico 1\nAmico 2\nAmico 3"
+)
+lista_partecipanti = [p.strip() for p in partecipanti_input.split("\n") if p.strip()]
 
-with tab1:
-    st.subheader("📋 Gestione Rosa e Formazione Titolari")
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        utente_sel = st.selectbox("Seleziona Squadra", ["Leonardo", "Squadra 2", "Squadra 3"], key="rosa_ut")
-    with col2:
-        st.info(f"Stai visualizzando la rosa e i titolari di **{utente_sel}**.")
-    
-    # Esempio tabella rosa
-    df_sample = pd.DataFrame({
-        "Ruolo": ["P", "D", "D", "C", "C", "A", "A"],
-        "Calciatore": ["Di Gregorio", "Bastoni", "Di Lorenzo", "Barella", "Pulisic", "Lautaro", "Retegui"],
-        "Squadra": ["Juve", "Inter", "Napoli", "Inter", "Milan", "Inter", "Atalanta"],
-        "FM": [6.5, 6.3, 6.4, 6.8, 7.2, 8.5, 7.9]
-    })
-    st.dataframe(df_sample, use_container_width=True)
+st.sidebar.success(
+    f"Lega '{nome_lega}' attiva con {len(lista_partecipanti)} partecipanti!"
+)
 
-with tab2:
-    st.subheader("🔨 Asta Live & Mercato di Riparazione")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        ruolo_asta = st.selectbox("Ruolo", ["Portieri", "Difensori", "Centrocampisti", "Attaccanti"])
-    with col2:
-        giocatore_asta = st.selectbox("Giocatore", ["Nome Giocatore 1", "Nome Giocatore 2"])
-    with col3:
-        offerta = st.number_input("Offerta Crediti (1-500)", min_value=1, max_value=500, value=10)
-    
-    if st.button("Fai Offerta / Acquista", type="primary"):
-        st.success(f"Offerta registrata con successo per {giocatore_asta}!")
+# Menu di navigazione principale
+scelta = st.sidebar.radio(
+    "Vai a:",
+    ["📋 Listone Serie A", "👥 Rose delle Squadre", "🔨 Gestione Mercato / Asta"],
+)
 
-with tab3:
-    st.subheader("⚽ Simulatore Giornata & Scontro Diretto")
-    c1, c2, c3 = st.columns([2, 1, 2])
-    with c1:
-        squadra_casa = st.selectbox("Squadra Casa", ["Leonardo", "Squadra 2"], key="sc_casa")
-    with c2:
-        st.markdown("<h3 style='text-align: center;'>VS</h3>", unsafe_allow_html=True)
-    with c3:
-        squadra_fuori = st.selectbox("Squadra Trasferta", ["Squadra 3", "Squadra 4"], key="sc_fuori")
-    
-    if st.button("Simula Partita in Diretta", type="primary"):
-        col_res1, col_res2 = st.columns(2)
-        col_res1.metric(label=squadra_casa, value="74.5", delta="+1.5 vs media")
-        col_res2.metric(label=squadra_fuori, value="69.0", delta="-2.0 vs media")
-        st.balloons()
+# --- 2. LISTONE AGGIORNATO SERIE A ---
+# Dati aggiornati dei giocatori reali della Serie A
+data_listone = {
+    "Giocatore": [
+        "Lautaro Martinez",
+        "Marcus Thuram",
+        "Donyell Malen",
+        "Hakan Calhanoglu",
+        "Christian Pulisic",
+        "Scott McTominay",
+        "Nico Paz",
+        "Kenan Yildiz",
+        "Federico Dimarco",
+        "Mike Maignan",
+        "Mile Svilar",
+        "Gleison Bremer",
+        "Alessandro Buongiorno",
+        "Riccardo Orsolini",
+        "Moise Kean",
+        "Rasmus Hojlund",
+    ],
+    "Ruolo": [
+        "A",
+        "A",
+        "A",
+        "C",
+        "C",
+        "C",
+        "C",
+        "A",
+        "D",
+        "P",
+        "P",
+        "D",
+        "D",
+        "C",
+        "A",
+        "A",
+    ],
+    "Squadra": [
+        "Inter",
+        "Inter",
+        "Roma",
+        "Inter",
+        "Milan",
+        "Napoli",
+        "Como",
+        "Juventus",
+        "Inter",
+        "Milan",
+        "Roma",
+        "Juventus",
+        "Napoli",
+        "Bologna",
+        "Fiorentina",
+        "Napoli",
+    ],
+    "Quotazione": [35, 29, 34, 27, 25, 28, 30, 23, 32, 15, 18, 15, 14, 26, 25, 28],
+}
+df_listone = pd.DataFrame(data_listone)
 
-with tab4:
-    st.subheader("🛡️ Modificatore di Difesa & 📊 Classifica Marcatori")
+if scelta == "📋 Listone Serie A":
+    st.header("📋 Listone Ufficiale Giocatori Serie A")
+    st.markdown("Cerca e filtra i giocatori per ruolo o squadra.")
+
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Calcola Modificatore Difesa"):
-            st.info("Calcolo modificatore completato per tutti i fantallenatori.")
+        filtro_ruolo = st.selectbox(
+            "Filtra per Ruolo", ["Tutti", "P", "D", "C", "A"]
+        )
     with col2:
-        if st.button("Aggiorna Statistiche & Bonus"):
-            st.success("Statistiche aggiornate dal file di Google Drive!")
+        filtro_squadra = st.selectbox(
+            "Filtra per Squadra", ["Tutte"] + list(df_listone["Squadra"].unique())
+        )
 
-with tab5:
-    st.subheader("📅 Calendario Ufficiale & Classifica Generale")
-    
-    # Classifica finta di esempio ma bellissima da vedere
-    df_classifica = pd.DataFrame({
-        "Pos": [1, 2, 3, 4],
-        "Squadra": ["Leonardo", "Squadra 2", "Squadra 3", "Squadra 4"],
-        "Punti": [15, 12, 10, 7],
-        "FantaVinti": [5, 4, 3, 2],
-        "Totale FantaPunti": [372.5, 360.0, 355.5, 340.0]
-    })
-    st.dataframe(df_classifica, use_container_width=True)
+    df_filtrato = df_listone.copy()
+    if filtro_ruolo != "Tutti":
+        df_filtrato = df_filtrato[df_filtrato["Ruolo"] == filtro_ruolo]
+    if filtro_squadra != "Tutte":
+        df_filtrato = df_filtrato[df_filtrato["Squadra"] == filtro_squadra]
+
+    st.dataframe(df_filtrato, use_container_width=True)
+
+# --- 3. ROSE DELLE SQUADRE ---
+elif scelta == "👥 Rose delle Squadre":
+    st.header("👥 Rose delle Squadre della Lega")
+    st.markdown("Visualizza i giocatori acquistati da ciascun partecipante.")
+
+    # Simulazione iniziale delle rose basata sui partecipanti inseriti
+    if "rose" not in st.session_state:
+        st.session_state.rose = {
+            p: pd.DataFrame(columns=["Giocatore", "Ruolo", "Squadra", "Spesa"])
+            for p in lista_partecipanti
+        }
+
+    squadra_selezionata = st.selectbox(
+        "Seleziona la squadra da visualizzare", lista_partecipanti
+    )
+
+    if squadra_selezionata in st.session_state.rose:
+        st.subheader(f"Rosa di: {squadra_selezionata}")
+        st.dataframe(
+            st.session_state.rose[squadra_selezionata], use_container_width=True
+        )
+    else:
+        st.info("Nessun giocatore in rosa per questa squadra.")
+
+# --- 4. GESTIONE MERCATO / ASTA ---
+elif scelta == "🔨 Gestione Mercato / Asta":
+    st.header("🔨 Assegnazione Giocatori (Asta / Mercato)")
+    st.markdown(
+        "Seleziona un giocatore dal listone, assegnalo a un partecipante e scala i crediti."
+    )
+
+    if "rose" not in st.session_state:
+        st.session_state.rose = {
+            p: pd.DataFrame(columns=["Giocatore", "Ruolo", "Squadra", "Spesa"])
+            for p in lista_partecipanti
+        }
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        giocatore_scelto = st.selectbox(
+            "Scegli Giocatore", df_listone["Giocatore"].tolist()
+        )
+    with col2:
+        acquirente = st.selectbox("Assegna a Squadra", lista_partecipanti)
+    with col3:
+        prezzo_pagato = st.number_input("Crediti spesi", min_value=1, value=10)
+
+    if st.button("💾 Conferma Acquisto"):
+        info_giocatore = df_listone[
+            df_listone["Giocatore"] == giocatore_scelto
+        ].iloc[0]
+
+        nuovo_acquisto = pd.DataFrame(
+            [
+                {
+                    "Giocatore": info_giocatore["Giocatore"],
+                    "Ruolo": info_giocatore["Ruolo"],
+                    "Squadra": info_giocatore["Squadra"],
+                    "Spesa": prezzo_pagato,
+                }
+            ]
+        )
+
+        st.session_state.rose[acquirente] = pd.concat(
+            [st.session_state.rose[acquirente], nuovo_acquisto], ignore_index=True
+        )
+        st.success(
+            f"✅ {giocatore_scelto} assegnato a {acquirente} per {prezzo_pagato} crediti!"
+        )
